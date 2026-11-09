@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load farmacia %}
+{% block titulo %}{{ tarefa.titulo }}{% endblock %}
+{% block conteudo %}
+<div class="cabecalho-pagina">
+  <a class="btn btn-secundario" href="{% url 'tarefas:lista' %}">← Tarefas</a>
+  {% if user.is_proprietario %}
+  <div class="acoes">
+    <a class="btn btn-secundario btn-pequeno" href="{% url 'tarefas:editar' tarefa.pk %}">Editar</a>
+    <form method="post" action="{% url 'tarefas:apagar' tarefa.pk %}" data-confirmar="Apagar esta tarefa?">{% csrf_token %}<button class="btn btn-perigo btn-pequeno" type="submit">Apagar</button></form>
+  </div>
+  {% endif %}
+</div>
+
+<div class="pilha">
+  <article class="cartao">
+    <h1>{{ tarefa.titulo }}</h1>
+    <div class="tarefa"><div class="info"><div class="meta-info">
+      {% avatar tarefa.responsavel "sm" %}<span>{{ tarefa.responsavel.nome_exibicao }}</span>
+      <span class="selo {% if tarefa.status == 'CONCLUIDA' %}selo-sucesso{% elif tarefa.status == 'EM_ANDAMENTO' %}selo-info{% endif %}">{{ tarefa.get_status_display }}</span>
+      <span class="selo {% if tarefa.prioridade == 3 %}selo-perigo{% endif %}">Prioridade {{ tarefa.get_prioridade_display|lower }}</span>
+      {% if tarefa.prazo %}<span class="selo {% if tarefa.atrasada %}selo-perigo{% endif %}">Prazo {{ tarefa.prazo|date:"d/m/Y" }}{% if tarefa.atrasada %} (atrasada){% endif %}</span>{% endif %}
+    </div></div></div>
+    {% if tarefa.descricao %}<p class="post-texto" style="margin-top:1rem">{{ tarefa.descricao }}</p>{% endif %}
+    <p class="suave pequeno">Criada por {{ tarefa.criada_por.nome_exibicao|default:"—" }} em {{ tarefa.criada_em|date:"d/m/Y" }}{% if tarefa.concluida_em %} · concluída em {{ tarefa.concluida_em|date:"d/m/Y H:i" }}{% endif %}</p>
+
+    <form class="acoes" method="post" action="{% url 'tarefas:mudar_status' tarefa.pk %}">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+      {% for valor, rotulo in status_opcoes %}
+        {% if valor != tarefa.status %}<button class="btn {% if valor == 'CONCLUIDA' %}{% else %}btn-secundario{% endif %} btn-pequeno" name="status" value="{{ valor }}" type="submit">Marcar como {{ rotulo|lower }}</button>{% endif %}
+      {% endfor %}
+    </form>
+  </article>
+
+  <section class="cartao">
+    <h2>Comentários</h2>
+    <div class="comentarios">
+      {% for c in comentarios %}
+      <div class="comentario">{% avatar c.autor "sm" %}<div class="balao"><strong class="pequeno">{{ c.autor.nome_exibicao }}</strong> <span class="suave pequeno">· {{ c.criado_em|date:"d/m H:i" }}</span><p>{{ c.texto }}</p></div></div>
+      {% empty %}
+      <p class="suave pequeno">Nenhum comentário ainda. Use para avisar o andamento ou tirar dúvidas.</p>
+      {% endfor %}
+      <form class="form-linha" method="post">
+        {% csrf_token %}
+        <div>{{ form.texto }}</div>
+        <button class="btn btn-secundario" type="submit">Enviar</button>
+      </form>
+    </div>
+  </section>
+</div>
+{% endblock %}

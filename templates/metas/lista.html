@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load farmacia %}
+{% block titulo %}Metas de {{ mes|date:"F/Y" }}{% endblock %}
+{% block conteudo %}
+<div class="cabecalho-pagina">
+  <h1>Metas · {{ mes|date:"F \d\e Y"|capfirst }}</h1>
+  <div class="acoes">
+    <a class="btn btn-secundario btn-pequeno" href="?mes={{ mes_anterior|date:'Y-m' }}" aria-label="Mês anterior">←</a>
+    {% if mes != mes_atual %}<a class="btn btn-secundario btn-pequeno" href="?">Mês atual</a>{% endif %}
+    <a class="btn btn-secundario btn-pequeno" href="?mes={{ proximo_mes|date:'Y-m' }}" aria-label="Próximo mês">→</a>
+    {% if user.is_proprietario %}
+    <a class="btn btn-pequeno" href="{% url 'metas:nova' %}?mes={{ mes|date:'Y-m' }}">+ Nova meta</a>
+    <form method="post" action="{% url 'metas:copiar_mes_anterior' %}" data-confirmar="Copiar as metas de {{ mes_anterior|date:'F' }} para {{ mes|date:'F' }}? (os valores lançados não são copiados)">
+      {% csrf_token %}<input type="hidden" name="mes" value="{{ mes|date:'Y-m' }}">
+      <button class="btn btn-secundario btn-pequeno" type="submit">Copiar do mês anterior</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="pilha">
+  <section>
+    <h2>Metas da farmácia</h2>
+    <div class="grade-metas">
+      {% for meta in da_farmacia %}
+        <div class="cartao">{% include "metas/_progresso.html" with grande=True %}</div>
+      {% empty %}
+        <div class="cartao vazio">Nenhuma meta da farmácia neste mês.</div>
+      {% endfor %}
+    </div>
+  </section>
+
+  {% if user.is_proprietario %}
+  <section>
+    <h2>Metas individuais por colaborador</h2>
+    <div class="grade-metas">
+      {% for pessoa, metas in por_colaborador.items %}
+        <div class="cartao">
+          <h3 class="post-cabecalho">{% avatar pessoa "sm" %} {{ pessoa.nome_exibicao }}</h3>
+          {% for meta in metas %}{% include "metas/_progresso.html" %}{% endfor %}
+          <a class="pequeno" href="{% url 'metas:nova' %}?responsavel={{ pessoa.pk }}&mes={{ mes|date:'Y-m' }}">+ meta para {{ pessoa.first_name|default:pessoa.username }}</a>
+        </div>
+      {% empty %}
+        <div class="cartao vazio">Nenhuma meta individual neste mês.</div>
+      {% endfor %}
+    </div>
+  </section>
+  {% else %}
+  <section>
+    <h2>Minhas metas</h2>
+    <div class="grade-metas">
+      {% for meta in individuais %}
+        <div class="cartao">{% include "metas/_progresso.html" with grande=True %}</div>
+      {% empty %}
+        <div class="cartao vazio">Você não tem metas individuais neste mês.</div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% load farmacia %}<article class="cartao{% if post.fixado %} post-fixado{% endif %}" id="post-{{ post.pk }}">
+  <div class="post-cabecalho">
+    {% avatar post.autor %}
+    <div class="quem">
+      <strong>{{ post.autor.nome_exibicao }}</strong>
+      <span class="suave pequeno">{% if post.autor.cargo %}{{ post.autor.cargo }} · {% endif %}<time datetime="{{ post.criado_em|date:'c' }}" title="{{ post.criado_em|date:'d/m/Y H:i' }}">{{ post.criado_em|quando }}</time></span>
+    </div>
+    <div class="acoes">
+      {% if post.fixado %}<span class="selo">{% include "core/_icone.html" with nome="fixar" %} Fixado</span>{% endif %}
+      {% if user.is_proprietario %}
+      <form class="inline" method="post" action="{% url 'feed:fixar' post.pk %}">{% csrf_token %}<button class="btn-link" type="submit">{% if post.fixado %}Desafixar{% else %}Fixar{% endif %}</button></form>
+      {% endif %}
+      {% if post.autor == user or user.is_proprietario %}
+      <form class="inline" method="post" action="{% url 'feed:apagar' post.pk %}" data-confirmar="Apagar este post?">{% csrf_token %}<button class="btn-link perigo" type="submit">Apagar</button></form>
+      {% endif %}
+    </div>
+  </div>
+
+  <p class="post-texto">{{ post.texto }}</p>
+  {% if post.imagem %}<img class="post-imagem" src="{{ post.imagem.url }}" alt="Imagem do post de {{ post.autor.nome_exibicao }}" loading="lazy">{% endif %}
+
+  <div class="post-rodape">
+    <form class="inline" method="post" action="{% url 'feed:curtir' post.pk %}" hx-post="{% url 'feed:curtir' post.pk %}" hx-target="#post-{{ post.pk }}" hx-swap="outerHTML">
+      {% csrf_token %}
+      <button class="btn-curtir{% if post.curtido %} curtido{% endif %}" type="submit" aria-pressed="{{ post.curtido|yesno:'true,false' }}">
+        {% include "core/_icone.html" with nome="coracao" %} {{ post.total_curtidas }} curtida{{ post.total_curtidas|pluralize }}
+      </button>
+    </form>
+    <span class="suave pequeno">{{ post.comentarios.all|length }} comentário{{ post.comentarios.all|length|pluralize }}</span>
+  </div>
+
+  <div class="comentarios">
+    {% for c in post.comentarios.all %}
+    <div class="comentario">
+      {% avatar c.autor "sm" %}
+      <div class="balao">
+        <strong class="pequeno">{{ c.autor.nome_exibicao }}</strong> <span class="suave pequeno">· {{ c.criado_em|quando }}</span>
+        {% if c.autor == user or user.is_proprietario %}
+        <form class="inline" method="post" action="{% url 'feed:apagar_comentario' c.pk %}" hx-post="{% url 'feed:apagar_comentario' c.pk %}" hx-target="#post-{{ post.pk }}" hx-swap="outerHTML" hx-confirm="Apagar comentário?">{% csrf_token %}<button class="btn-link perigo" type="submit">apagar</button></form>
+        {% endif %}
+        <p>{{ c.texto }}</p>
+      </div>
+    </div>
+    {% endfor %}
+    <form class="form-linha" method="post" action="{% url 'feed:comentar' post.pk %}" hx-post="{% url 'feed:comentar' post.pk %}" hx-target="#post-{{ post.pk }}" hx-swap="outerHTML">
+      {% csrf_token %}
+      <div><label class="sr-only" for="comentario-{{ post.pk }}">Comentário</label><input id="comentario-{{ post.pk }}" type="text" name="texto" maxlength="1000" required placeholder="Escreva um comentário…" autocomplete="off"></div>
+      <button class="btn btn-secundario btn-pequeno" type="submit">Comentar</button>
+    </form>
+  </div>
+</article>

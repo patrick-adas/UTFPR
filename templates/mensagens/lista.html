@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load farmacia %}
+{% block titulo %}Mensagens{% endblock %}
+{% block conteudo %}
+<div class="cabecalho-pagina"><h1>Mensagens</h1></div>
+<div class="grade-inicio">
+  <section class="cartao">
+    <h2>Conversas</h2>
+    <ul class="lista-simples">
+      {% for item in itens %}
+      <li>
+        <a class="conversa-item{% if item.nao_lidas %} nao-lida{% endif %}" href="{% url 'mensagens:conversa' item.conversa.pk %}">
+          {% avatar item.outro %}
+          <span class="info">
+            <strong>{{ item.outro.nome_exibicao }}</strong>
+            <span class="previa">{% if item.ultima.autor == user %}Você: {% endif %}{{ item.ultima.texto|truncatechars:80 }}</span>
+          </span>
+          <span class="suave pequeno" style="text-align:right">{{ item.ultima.criada_em|date:"d/m H:i" }}{% if item.nao_lidas %}<br><span class="badge">{{ item.nao_lidas }}</span>{% endif %}</span>
+        </a>
+      </li>
+      {% empty %}
+      <li class="vazio">Nenhuma conversa ainda. Escolha um colega ao lado para começar.</li>
+      {% endfor %}
+    </ul>
+  </section>
+  <aside class="cartao">
+    <h2>Nova conversa</h2>
+    <ul class="lista-simples">
+      {% for colega in colegas %}
+      <li><a class="conversa-item" href="{% url 'mensagens:iniciar' colega.pk %}">{% avatar colega "sm" %}<span class="info"><strong>{{ colega.nome_exibicao }}</strong><span class="previa">{{ colega.cargo|default:colega.get_papel_display }}</span></span></a></li>
+      {% empty %}
+      <li class="vazio">Nenhum colega cadastrado.</li>
+      {% endfor %}
+    </ul>
+  </aside>
+</div>
+{% endblock %}

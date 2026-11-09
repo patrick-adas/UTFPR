@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block titulo %}Sem conexão{% endblock %}
+{% block body_class %}sem-nav{% endblock %}
+{% block corpo %}
+<main class="tela-login">
+  <div class="cartao" style="text-align:center">
+    <div class="marca">Rede Farmácia</div>
+    <h1>Você está sem internet</h1>
+    <p class="suave">Assim que a conexão voltar, a página será recarregada.</p>
+    <button class="btn" type="button" onclick="location.reload()">Tentar de novo</button>
+  </div>
+</main>
+<script>window.addEventListener("online", function () { location.reload(); });</script>
+{% endblock %}

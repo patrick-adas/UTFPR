@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load farmacia %}
+{% block titulo %}{{ recado.titulo }}{% endblock %}
+{% block conteudo %}
+<div class="cabecalho-pagina">
+  <a class="btn btn-secundario" href="{% url 'recados:lista' %}">← Recados</a>
+  {% if recado.autor == user %}
+  <form method="post" action="{% url 'recados:apagar' recado.pk %}" data-confirmar="Apagar este recado?">{% csrf_token %}<button class="btn btn-perigo btn-pequeno" type="submit">Apagar</button></form>
+  {% endif %}
+</div>
+<div class="pilha">
+  <article class="cartao{% if recado.is_privado %} cartao-privado{% elif recado.importante %} cartao-destaque{% endif %}">
+    <div class="post-cabecalho">
+      {% avatar recado.autor %}
+      <div class="quem"><h1 style="margin:0">{{ recado.titulo }}</h1><span class="suave pequeno">{{ recado.autor.nome_exibicao }} · {{ recado.criado_em|date:"d/m/Y \à\s H:i" }}</span></div>
+      <span class="acoes">{% if recado.is_privado %}<span class="selo selo-info">Privado</span>{% else %}<span class="selo">Geral</span>{% endif %}</span>
+    </div>
+    <p class="post-texto">{{ recado.texto }}</p>
+    {% if recado.autor != user %}<p class="suave pequeno">✓ Leitura confirmada.</p>{% endif %}
+  </article>
+
+  {% if confirmacoes is not None %}
+  <section class="cartao">
+    <h2>Confirmações de leitura</h2>
+    <ul class="lista-simples">
+      {% for pessoa, lido_em in confirmacoes %}
+      <li class="post-cabecalho" style="margin:0">{% avatar pessoa "sm" %} <span>{{ pessoa.nome_exibicao }}</span>
+        <span class="acoes">{% if lido_em %}<span class="selo selo-sucesso">Lido {{ lido_em|date:"d/m H:i" }}</span>{% else %}<span class="selo selo-alerta">Ainda não leu</span>{% endif %}</span>
+      </li>
+      {% empty %}
+      <li class="vazio">Ninguém na equipe para confirmar.</li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

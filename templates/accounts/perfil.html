@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load farmacia %}
+{% block titulo %}Meu perfil{% endblock %}
+{% block conteudo %}
+<div class="cabecalho-pagina">
+  <div class="post-cabecalho" style="margin:0">{% avatar user "lg" %}<div class="quem"><h1 style="margin:0">{{ user.nome_exibicao }}</h1><span class="suave">{{ user.get_papel_display }}{% if user.cargo %} · {{ user.cargo }}{% endif %}</span></div></div>
+  <div class="acoes">
+    {% if user.is_proprietario %}<a class="btn btn-secundario" href="{% url 'accounts:equipe' %}">Gerenciar equipe</a>{% endif %}
+    <a class="btn btn-secundario" href="{% url 'accounts:trocar_senha' %}">Trocar senha</a>
+    <button type="button" class="btn btn-secundario instalar-app">Instalar app</button>
+  </div>
+</div>
+<div class="cartao">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-grade">
+      {% include "core/_campo.html" with campo=form.first_name %}
+      {% include "core/_campo.html" with campo=form.last_name %}
+      {% include "core/_campo.html" with campo=form.email %}
+      {% include "core/_campo.html" with campo=form.telefone %}
+      {% include "core/_campo.html" with campo=form.foto classe="largo" %}
+    </div>
+    <button class="btn" type="submit">Salvar</button>
+  </form>
+</div>
+{% endblock %}

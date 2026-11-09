@@ -1,0 +1,9 @@
+{% load farmacia %}<a class="meta" href="{% url 'metas:detalhe' meta.pk %}" style="margin-bottom:.9rem">
+  <div class="meta-topo">
+    <strong>{{ meta.titulo }}</strong>
+    <span>{% if meta.atingida %}<span class="selo selo-sucesso">Atingida</span>{% else %}{{ meta.percentual|percentual }}%{% endif %}</span>
+  </div>
+  {% if mostrar_responsavel and meta.responsavel %}<div class="suave pequeno">{{ meta.responsavel.nome_exibicao }}</div>{% endif %}
+  <div class="barra barra-{{ meta.percentual|cor_progresso }}{% if grande %} barra-grande{% endif %}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ meta.percentual_barra|stringformat:'d' }}" aria-label="Progresso de {{ meta.titulo }}"><span style="width: {{ meta.percentual_barra|stringformat:'.1f' }}%"></span></div>
+  <div class="meta-valores"><span>{{ meta.valor_atual|valor_meta:meta.unidade }}</span><span>alvo {{ meta.valor_alvo|valor_meta:meta.unidade }}</span></div>
+</a>

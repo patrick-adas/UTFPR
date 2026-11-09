@@ -1,0 +1,1 @@
+<span id="{{ id }}" class="badge"{% if oob %} hx-swap-oob="true"{% endif %}{% if not n %} hidden{% endif %} aria-label="{{ n|default:0 }} não lidos">{% if n > 99 %}99+{% else %}{{ n|default:0 }}{% endif %}</span>

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block conteudo %}
+<div class="cabecalho-pagina">
+  <h1>{{ titulo }}</h1>
+  <a class="btn btn-secundario" href="{% url 'accounts:equipe' %}">← Equipe</a>
+</div>
+<div class="pilha">
+  <div class="cartao">
+    <form method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <div class="form-grade">
+        {% include "core/_campo.html" with campo=form.first_name %}
+        {% include "core/_campo.html" with campo=form.last_name %}
+        {% include "core/_campo.html" with campo=form.username %}
+        {% include "core/_campo.html" with campo=form.email %}
+        {% include "core/_campo.html" with campo=form.cargo %}
+        {% include "core/_campo.html" with campo=form.telefone %}
+        {% include "core/_campo.html" with campo=form.papel %}
+        {% if form.senha_inicial %}{% include "core/_campo.html" with campo=form.senha_inicial %}{% endif %}
+      </div>
+      <button class="btn" type="submit">Salvar</button>
+    </form>
+  </div>
+
+  {% if colaborador %}
+  <div class="cartao">
+    <h2>Redefinir senha</h2>
+    <p class="suave pequeno">Use quando o colaborador esquecer a senha. Ele(a) deverá criar uma nova no próximo acesso.</p>
+    <form class="form-linha" method="post" action="{% url 'accounts:colaborador_redefinir_senha' colaborador.pk %}">
+      {% csrf_token %}
+      <div>{% include "core/_campo.html" with campo=senha_form.nova_senha %}</div>
+      <div class="campo"><button class="btn btn-secundario" type="submit">Redefinir</button></div>
+    </form>
+  </div>
+
+  {% if colaborador != user %}
+  <div class="cartao">
+    <h2>{% if colaborador.is_active %}Desativar conta{% else %}Reativar conta{% endif %}</h2>
+    <p class="suave pequeno">{% if colaborador.is_active %}A pessoa deixa de conseguir entrar, mas o histórico (posts, tarefas, metas) é mantido.{% else %}A pessoa volta a conseguir entrar com a senha atual.{% endif %}</p>
+    <form method="post" action="{% url 'accounts:colaborador_ativo' colaborador.pk %}" data-confirmar="Confirmar alteração da conta?">
+      {% csrf_token %}
+      <button class="btn {% if colaborador.is_active %}btn-perigo{% endif %}" type="submit">{% if colaborador.is_active %}Desativar{% else %}Reativar{% endif %}</button>
+    </form>
+  </div>
+  {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

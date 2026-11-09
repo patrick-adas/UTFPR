@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load farmacia %}
+{% block titulo %}Início{% endblock %}
+{% block conteudo %}
+<div class="grade-inicio">
+  <section class="pilha" aria-label="Feed">
+    {% if recados_privados_novos %}
+    <section class="cartao cartao-privado">
+      <h2>Recados para você</h2>
+      <ul class="lista-simples">
+        {% for r in recados_privados_novos %}
+        <li><a href="{% url 'recados:detalhe' r.pk %}"><strong>{{ r.titulo }}</strong></a><br><span class="suave pequeno">{{ r.autor.nome_exibicao }} · {{ r.criado_em|quando }}</span></li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    {% for recado in recados_destaque %}
+    <article class="cartao cartao-destaque">
+      <div class="post-cabecalho">
+        {% avatar recado.autor %}
+        <div class="quem"><strong>{{ recado.titulo }}</strong><span class="suave pequeno">{{ recado.autor.nome_exibicao }} · {{ recado.criado_em|quando }}</span></div>
+        <span class="acoes"><span class="selo selo-alerta">Importante</span>{% if recado.is_privado %}<span class="selo selo-info">Privado</span>{% endif %}</span>
+      </div>
+      <p class="post-texto">{{ recado.texto|truncatewords:60 }}</p>
+      <a class="pequeno" href="{% url 'recados:detalhe' recado.pk %}">{% if recado.lido or recado.autor == user %}Abrir recado{% else %}Ler e confirmar leitura{% endif %} →</a>
+    </article>
+    {% endfor %}
+
+    <article class="cartao">
+      <form method="post" action="{% url 'feed:postar' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="post-cabecalho">{% avatar user %}<strong>O que a equipe precisa saber, {{ user.first_name|default:user.username }}?</strong></div>
+        <div class="campo">{{ post_form.texto }}</div>
+        <div class="form-linha">
+          <div><label for="{{ post_form.imagem.id_for_label }}" class="pequeno suave">{{ post_form.imagem.label }}</label>{{ post_form.imagem }}</div>
+          <button class="btn" type="submit">Publicar</button>
+        </div>
+      </form>
+    </article>
+
+    {% for post in pagina %}
+      {% include "feed/_post.html" %}
+    {% empty %}
+      <div class="cartao vazio">Nenhum recado no feed ainda. Que tal dar o primeiro bom-dia para a equipe?</div>
+    {% endfor %}
+
+    {% if pagina.has_other_pages %}
+    <nav class="paginacao" aria-label="Paginação do feed">
+      {% if pagina.has_previous %}<a class="btn btn-secundario btn-pequeno" href="?pagina={{ pagina.previous_page_number }}">← Mais recentes</a>{% endif %}
+      <span class="suave pequeno">Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}</span>
+      {% if pagina.has_next %}<a class="btn btn-secundario btn-pequeno" href="?pagina={{ pagina.next_page_number }}">Mais antigos →</a>{% endif %}
+    </nav>
+    {% endif %}
+  </section>
+
+  <aside class="lateral pilha" aria-label="Resumo">
+    {% if resumo_equipe %}
+    <section class="cartao">
+      <h2>Equipe hoje <a href="{% url 'accounts:equipe' %}">Gerenciar equipe</a></h2>
+      <ul class="lista-simples">
+        <li><a href="{% url 'tarefas:lista' %}">{{ resumo_equipe.tarefas_abertas }} tarefa(s) em aberto</a>{% if resumo_equipe.tarefas_atrasadas %} · <span class="selo selo-perigo">{{ resumo_equipe.tarefas_atrasadas }} atrasada(s)</span>{% endif %}</li>
+        <li><a href="{% url 'metas:lista' %}">{{ resumo_equipe.metas_individuais }} meta(s) individual(is) em {{ mes|date:"F" }}</a></li>
+      </ul>
+      <div class="acoes" style="margin-top:.75rem">
+        <a class="btn btn-pequeno" href="{% url 'tarefas:nova' %}">+ Tarefa</a>
+        <a class="btn btn-pequeno" href="{% url 'metas:nova' %}">+ Meta</a>
+        <a class="btn btn-pequeno" href="{% url 'recados:lista' %}?novo=1">+ Recado</a>
+      </div>
+    </section>
+    {% endif %}
+
+    <section class="cartao">
+      <h2>Meta da farmácia · {{ mes|date:"F" }} <a href="{% url 'metas:lista' %}">Ver todas</a></h2>
+      {% for meta in metas_farmacia %}
+        {% include "metas/_progresso.html" %}
+      {% empty %}
+        <p class="vazio">Nenhuma meta da farmácia definida para este mês.</p>
+      {% endfor %}
+    </section>
+
+    {% if not user.is_proprietario or minhas_metas %}
+    <section class="cartao">
+      <h2>Minhas metas</h2>
+      {% for meta in minhas_metas %}
+        {% include "metas/_progresso.html" %}
+      {% empty %}
+        <p class="vazio">Você não tem metas individuais neste mês.</p>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    <section class="cartao">
+      <h2>Minhas tarefas <a href="{% url 'tarefas:lista' %}">Ver todas</a></h2>
+      <ul class="lista-simples">
+        {% for tarefa in minhas_tarefas %}
+          <li>{% include "tarefas/_item.html" with next=request.get_full_path %}</li>
+        {% empty %}
+          <li class="vazio">Tudo em dia! Nenhuma tarefa pendente.</li>
+        {% endfor %}
+      </ul>
+    </section>
+  </aside>
+</div>
+{% endblock %}

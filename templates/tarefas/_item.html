@@ -1,0 +1,25 @@
+{% load farmacia %}<div class="tarefa{% if tarefa.status == 'CONCLUIDA' %} concluida{% endif %}">
+  <form class="inline" method="post" action="{% url 'tarefas:mudar_status' tarefa.pk %}">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+    {% if tarefa.status == 'CONCLUIDA' %}
+      <input type="hidden" name="status" value="PENDENTE">
+      <button class="check marcado" type="submit" title="Reabrir tarefa" aria-label="Reabrir {{ tarefa.titulo }}">{% include "core/_icone.html" with nome="check" %}</button>
+    {% else %}
+      <input type="hidden" name="status" value="CONCLUIDA">
+      <button class="check" type="submit" title="Marcar como concluída" aria-label="Concluir {{ tarefa.titulo }}">{% include "core/_icone.html" with nome="check" %}</button>
+    {% endif %}
+  </form>
+  <div class="info">
+    <a class="titulo" href="{% url 'tarefas:detalhe' tarefa.pk %}">{{ tarefa.titulo }}</a>
+    <div class="meta-info">
+      {% if mostrar_responsavel %}{% avatar tarefa.responsavel "sm" %}<span>{{ tarefa.responsavel.nome_exibicao }}</span>{% endif %}
+      {% if tarefa.status == 'EM_ANDAMENTO' %}<span class="selo selo-info">Em andamento</span>{% endif %}
+      {% if tarefa.prioridade == 3 %}<span class="selo selo-perigo">Alta prioridade</span>{% endif %}
+      {% if tarefa.prazo %}
+        {% if tarefa.atrasada %}<span class="selo selo-perigo">Atrasada · {{ tarefa.prazo|date:"d/m" }}</span>
+        {% else %}<span>Prazo {{ tarefa.prazo|date:"d/m/Y" }}</span>{% endif %}
+      {% endif %}
+    </div>
+  </div>
+</div>

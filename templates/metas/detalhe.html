@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load farmacia %}
+{% block titulo %}{{ meta.titulo }}{% endblock %}
+{% block conteudo %}
+<div class="cabecalho-pagina">
+  <a class="btn btn-secundario" href="{% url 'metas:lista' %}?mes={{ meta.mes|date:'Y-m' }}">← Metas de {{ meta.mes|date:"F" }}</a>
+  {% if user.is_proprietario %}
+  <div class="acoes">
+    <a class="btn btn-secundario btn-pequeno" href="{% url 'metas:editar' meta.pk %}">Editar</a>
+    <form method="post" action="{% url 'metas:apagar' meta.pk %}" data-confirmar="Apagar esta meta e todos os lançamentos?">{% csrf_token %}<button class="btn btn-perigo btn-pequeno" type="submit">Apagar</button></form>
+  </div>
+  {% endif %}
+</div>
+
+<div class="pilha">
+  <article class="cartao">
+    <h1>{{ meta.titulo }}</h1>
+    <p class="suave pequeno">
+      {% if meta.is_individual %}Meta individual de {{ meta.responsavel.nome_exibicao }}{% else %}Meta da farmácia{% endif %} · {{ meta.mes|date:"F \d\e Y" }}
+    </p>
+    {% if meta.descricao %}<p class="post-texto">{{ meta.descricao }}</p>{% endif %}
+    <div class="meta-topo"><span class="numero-grande">{{ meta.valor_atual|valor_meta:meta.unidade }}</span><span class="numero-grande suave">{{ meta.percentual|percentual }}%</span></div>
+    <div class="barra barra-grande barra-{{ meta.percentual|cor_progresso }}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ meta.percentual_barra|stringformat:'d' }}"><span style="width: {{ meta.percentual_barra|stringformat:'.1f' }}%"></span></div>
+    <div class="meta-valores"><span>{% if meta.atingida %}Meta atingida! 🎉{% else %}Faltam {{ meta.faltante|valor_meta:meta.unidade }}{% endif %}</span><span>alvo {{ meta.valor_alvo|valor_meta:meta.unidade }}</span></div>
+  </article>
+
+  {% if pode_lancar %}
+  <section class="cartao">
+    <h2>Lançar progresso</h2>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <div class="form-grade">
+        {% include "core/_campo.html" with campo=form.valor %}
+        {% include "core/_campo.html" with campo=form.data %}
+        {% include "core/_campo.html" with campo=form.observacao classe="largo" %}
+      </div>
+      <button class="btn" type="submit">Lançar</button>
+    </form>
+  </section>
+  {% endif %}
+
+  <section class="cartao">
+    <h2>Histórico de lançamentos</h2>
+    <div class="tabela-wrap">
+    <table>
+      <thead><tr><th>Data</th><th>Valor</th><th>Observação</th><th>Por</th><th></th></tr></thead>
+      <tbody>
+      {% for l in lancamentos %}
+        <tr>
+          <td>{{ l.data|date:"d/m/Y" }}</td>
+          <td>{{ l.valor|valor_meta:meta.unidade }}</td>
+          <td>{{ l.observacao|default:"—" }}</td>
+          <td>{{ l.lancado_por.nome_exibicao|default:"—" }}</td>
+          <td>{% if user.is_proprietario or l.lancado_por == user and pode_lancar %}<form method="post" action="{% url 'metas:apagar_lancamento' l.pk %}" data-confirmar="Remover este lançamento?">{% csrf_token %}<button class="btn-link perigo" type="submit">remover</button></form>{% endif %}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5" class="vazio">Nenhum lançamento ainda.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

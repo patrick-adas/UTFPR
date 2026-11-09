@@ -1,0 +1,4 @@
+<div class="msg{% if m.autor_id == user.pk %} minha{% endif %}" id="msg-{{ m.pk }}">
+  <p>{{ m.texto }}</p>
+  <time datetime="{{ m.criada_em|date:'c' }}">{{ m.criada_em|date:"H:i" }}</time>
+</div>

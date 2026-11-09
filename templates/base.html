@@ -1,0 +1,54 @@
+{% load static farmacia %}<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block titulo %}Início{% endblock %} · Rede Farmácia</title>
+  <meta name="theme-color" content="#0f766e">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Rede Farmácia">
+  <link rel="manifest" href="{% url 'core:manifest' %}">
+  <link rel="icon" href="{% static 'icons/icon-192.png' %}" type="image/png">
+  <link rel="apple-touch-icon" href="{% static 'icons/apple-touch-icon.png' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script src="{% static 'js/htmx.min.js' %}" defer></script>
+  <script src="{% static 'js/app.js' %}" defer></script>
+</head>
+<body class="{% block body_class %}{% endblock %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+{% block corpo %}
+  <header class="topo">
+    <a class="marca" href="{% url 'core:inicio' %}">{% include "core/_icone.html" with nome="cruz" %} Rede Farmácia</a>
+    <div class="topo-usuario">
+      <button type="button" class="btn-sair instalar-app">Instalar app</button>
+      <a href="{% url 'accounts:perfil' %}" title="Meu perfil">{% avatar user "sm" %}<span class="nome">{{ user.nome_exibicao }}</span></a>
+      <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="btn-sair" type="submit">Sair</button></form>
+    </div>
+  </header>
+
+  {% with secao=request.resolver_match.app_name %}
+  <nav class="nav-principal" aria-label="Navegação principal">
+    <a href="{% url 'core:inicio' %}" class="{% if secao == 'core' %}ativo{% endif %}">{% include "core/_icone.html" with nome="inicio" %}<span>Início</span></a>
+    <a href="{% url 'recados:lista' %}" class="{% if secao == 'recados' %}ativo{% endif %}">{% include "core/_icone.html" with nome="recados" %}<span>Recados</span>{% include "core/_badge.html" with id="badge-recados" n=contadores.recados %}</a>
+    <a href="{% url 'tarefas:lista' %}" class="{% if secao == 'tarefas' %}ativo{% endif %}">{% include "core/_icone.html" with nome="tarefas" %}<span>Tarefas</span>{% include "core/_badge.html" with id="badge-tarefas" n=contadores.tarefas %}</a>
+    <a href="{% url 'metas:lista' %}" class="{% if secao == 'metas' %}ativo{% endif %}">{% include "core/_icone.html" with nome="metas" %}<span>Metas</span></a>
+    <a href="{% url 'mensagens:lista' %}" class="{% if secao == 'mensagens' %}ativo{% endif %}">{% include "core/_icone.html" with nome="mensagens" %}<span>Mensagens</span>{% include "core/_badge.html" with id="badge-mensagens" n=contadores.mensagens %}</a>
+    {% if user.is_proprietario %}
+    <a href="{% url 'accounts:equipe' %}" class="so-desktop {% if secao == 'accounts' %}ativo{% endif %}">{% include "core/_icone.html" with nome="equipe" %}<span>Equipe</span></a>
+    {% endif %}
+  </nav>
+  {% endwith %}
+
+  <div hx-get="{% url 'core:contadores' %}" hx-trigger="every {{ polling_contadores|default:30 }}s" hx-swap="none"></div>
+
+  <main class="conteudo">
+    {% if messages %}
+    <ul class="flash" role="status">
+      {% for m in messages %}<li class="{{ m.tags }}">{{ m }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+    {% block conteudo %}{% endblock %}
+  </main>
+{% endblock %}
+</body>
+</html>

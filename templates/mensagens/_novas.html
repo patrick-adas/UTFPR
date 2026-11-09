@@ -1,0 +1,3 @@
+{% for m in mensagens %}{% include "mensagens/_mensagem.html" %}{% endfor %}
+{% if mensagens %}<p id="chat-vazio" hx-swap-oob="delete"></p>{% endif %}
+{% include "mensagens/_poller.html" %}

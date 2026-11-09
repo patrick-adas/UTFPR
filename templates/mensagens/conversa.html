@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load farmacia %}
+{% block titulo %}Conversa com {{ outro.nome_exibicao }}{% endblock %}
+{% block conteudo %}
+<section class="cartao chat">
+  <div class="chat-topo">
+    <a href="{% url 'mensagens:lista' %}" class="btn btn-secundario btn-pequeno" aria-label="Voltar para as conversas">←</a>
+    {% avatar outro "sm" %}
+    <div><strong>{{ outro.nome_exibicao }}</strong><div class="suave pequeno">{{ outro.cargo|default:outro.get_papel_display }}</div></div>
+  </div>
+
+  <div class="chat-mensagens" id="chat-mensagens" aria-live="polite">
+    {% for m in mensagens %}
+      {% ifchanged m.criada_em.date %}<span class="dia-separador">{{ m.criada_em|date:"d/m/Y" }}</span>{% endifchanged %}
+      {% include "mensagens/_mensagem.html" %}
+    {% empty %}
+      <p class="vazio" id="chat-vazio">Diga olá para {{ outro.first_name|default:outro.username }}!</p>
+    {% endfor %}
+    {% include "mensagens/_poller.html" %}
+  </div>
+
+  <form class="chat-form" id="chat-form" method="post" action="{% url 'mensagens:enviar' conversa.pk %}"
+        hx-post="{% url 'mensagens:enviar' conversa.pk %}" hx-swap="none">
+    {% csrf_token %}
+    <label class="sr-only" for="campo-mensagem">Mensagem</label>
+    <textarea id="campo-mensagem" name="texto" rows="1" maxlength="2000" placeholder="Escreva uma mensagem…" required autofocus></textarea>
+    <button class="btn" type="submit">Enviar</button>
+  </form>
+</section>
+{% endblock %}

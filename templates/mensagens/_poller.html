@@ -1,0 +1,5 @@
+<div id="chat-poller"
+     hx-get="{% url 'mensagens:novas' conversa.pk %}?depois={{ ultimo_id }}"
+     hx-trigger="every {{ intervalo }}s, mensagemEnviada from:body"
+     hx-sync="this:queue last"
+     hx-swap="outerHTML"></div>

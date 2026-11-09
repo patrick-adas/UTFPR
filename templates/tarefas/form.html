@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block conteudo %}
+<div class="cabecalho-pagina">
+  <h1>{{ titulo }}</h1>
+  <a class="btn btn-secundario" href="{% if tarefa %}{% url 'tarefas:detalhe' tarefa.pk %}{% else %}{% url 'tarefas:lista' %}{% endif %}">Cancelar</a>
+</div>
+<div class="cartao">
+  <form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <div class="form-grade">
+      {% include "core/_campo.html" with campo=form.titulo classe="largo" %}
+      {% include "core/_campo.html" with campo=form.descricao classe="largo" %}
+      {% include "core/_campo.html" with campo=form.responsavel %}
+      {% include "core/_campo.html" with campo=form.prazo %}
+      {% include "core/_campo.html" with campo=form.prioridade %}
+      {% include "core/_campo.html" with campo=form.status %}
+    </div>
+    <button class="btn" type="submit">Salvar</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block titulo %}Tarefas{% endblock %}
+{% block conteudo %}
+<div class="cabecalho-pagina">
+  <h1>{% if user.is_proprietario %}Tarefas da equipe{% else %}Minhas tarefas{% endif %}</h1>
+  {% if user.is_proprietario %}<a class="btn" href="{% url 'tarefas:nova' %}">+ Nova tarefa</a>{% endif %}
+</div>
+
+<form class="filtros" method="get" aria-label="Filtrar tarefas">
+  <a href="?status=abertas&responsavel={{ responsavel_id }}" class="{% if status == 'abertas' %}ativo{% endif %}">Em aberto</a>
+  {% for valor, rotulo in status_opcoes %}
+  <a href="?status={{ valor }}&responsavel={{ responsavel_id }}" class="{% if status == valor %}ativo{% endif %}">{{ rotulo }}</a>
+  {% endfor %}
+  <a href="?status=todas&responsavel={{ responsavel_id }}" class="{% if status == 'todas' %}ativo{% endif %}">Todas</a>
+  {% if equipe %}
+  <input type="hidden" name="status" value="{{ status }}">
+  <label class="sr-only" for="filtro-responsavel">Responsável</label>
+  <select id="filtro-responsavel" name="responsavel" onchange="this.form.submit()">
+    <option value="">Toda a equipe</option>
+    {% for u in equipe %}<option value="{{ u.pk }}" {% if responsavel_id == u.pk|stringformat:'d' %}selected{% endif %}>{{ u.nome_exibicao }}</option>{% endfor %}
+  </select>
+  {% endif %}
+</form>
+
+<div class="cartao">
+  <ul class="lista-simples">
+    {% for tarefa in tarefas %}
+      <li>{% include "tarefas/_item.html" with next=request.get_full_path mostrar_responsavel=user.is_proprietario %}</li>
+    {% empty %}
+      <li class="vazio">Nenhuma tarefa neste filtro.</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

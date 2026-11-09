@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load farmacia %}
+{% block titulo %}Recados{% endblock %}
+{% block conteudo %}
+<div class="cabecalho-pagina">
+  <h1>Recados</h1>
+</div>
+
+{% if form %}
+<details class="cartao novo-item pilha" {% if abrir_form or request.GET.novo %}open{% endif %} style="margin-bottom:1rem">
+  <summary class="btn">+ Novo recado</summary>
+  <form method="post" action="{% url 'recados:novo' %}">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% include "core/_campo.html" with campo=form.titulo %}
+    {% include "core/_campo.html" with campo=form.texto %}
+    {% include "core/_campo.html" with campo=form.tipo %}
+    {% include "core/_campo.html" with campo=form.destinatarios mostrar_se="tipo=PRIVADO" %}
+    <div class="campo opcoes"><label>{{ form.importante }} Marcar como importante (aparece em destaque no início)</label></div>
+    <button class="btn" type="submit">Enviar recado</button>
+  </form>
+</details>
+{% endif %}
+
+<nav class="filtros" aria-label="Filtrar recados">
+  <a href="?" class="{% if not filtro %}ativo{% endif %}">Todos</a>
+  <a href="?tipo=GERAL" class="{% if filtro == 'GERAL' %}ativo{% endif %}">Gerais</a>
+  <a href="?tipo=PRIVADO" class="{% if filtro == 'PRIVADO' %}ativo{% endif %}">Privados</a>
+</nav>
+
+<div class="pilha">
+{% for recado in recados %}
+  <article class="cartao{% if recado.is_privado %} cartao-privado{% elif recado.importante %} cartao-destaque{% endif %}">
+    <div class="post-cabecalho">
+      {% avatar recado.autor %}
+      <div class="quem">
+        <strong><a href="{% url 'recados:detalhe' recado.pk %}">{{ recado.titulo }}</a></strong>
+        <span class="suave pequeno">{{ recado.autor.nome_exibicao }} · {{ recado.criado_em|date:"d/m/Y H:i" }}</span>
+      </div>
+      <span class="acoes">
+        {% if recado.importante %}<span class="selo selo-alerta">Importante</span>{% endif %}
+        {% if recado.is_privado %}<span class="selo selo-info">Privado</span>{% endif %}
+        {% if recado.autor != user and not recado.lido %}<span class="selo selo-perigo">Novo</span>{% endif %}
+      </span>
+    </div>
+    <p class="post-texto">{{ recado.texto|truncatewords:40 }}</p>
+    {% if recado.is_privado and user.is_proprietario %}<p class="suave pequeno">Para: {{ recado.destinatarios.all|join:", " }}</p>{% endif %}
+    <a class="pequeno" href="{% url 'recados:detalhe' recado.pk %}">Abrir →</a>
+  </article>
+{% empty %}
+  <div class="cartao vazio">Nenhum recado por aqui.</div>
+{% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,6 @@
+<div class="campo{% if classe %} {{ classe }}{% endif %}"{% if mostrar_se %} data-mostrar-se="{{ mostrar_se }}"{% endif %}>
+  {% if campo.label %}<label for="{{ campo.id_for_label }}">{{ campo.label }}{% if campo.field.required %} *{% endif %}</label>{% endif %}
+  {{ campo }}
+  {% if campo.help_text %}<span class="ajuda">{{ campo.help_text }}</span>{% endif %}
+  {{ campo.errors }}
+</div>

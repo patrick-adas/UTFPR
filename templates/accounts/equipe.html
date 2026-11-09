@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load farmacia %}
+{% block titulo %}Equipe{% endblock %}
+{% block conteudo %}
+<div class="cabecalho-pagina">
+  <h1>Equipe</h1>
+  <a class="btn" href="{% url 'accounts:colaborador_novo' %}">+ Novo colaborador</a>
+</div>
+<div class="cartao tabela-wrap">
+  <table>
+    <thead><tr><th>Nome</th><th>Login</th><th>Cargo</th><th>Papel</th><th></th></tr></thead>
+    <tbody>
+    {% for u in usuarios %}
+      <tr class="{% if not u.is_active %}inativo{% endif %}">
+        <td><span class="post-cabecalho" style="margin:0">{% avatar u "sm" %} {{ u.nome_exibicao }}{% if not u.is_active %} <span class="selo selo-perigo">inativo</span>{% endif %}</span></td>
+        <td>{{ u.username }}</td>
+        <td>{{ u.cargo|default:"—" }}</td>
+        <td>{{ u.get_papel_display }}</td>
+        <td>
+          <div class="acoes">
+            <a class="btn btn-secundario btn-pequeno" href="{% url 'accounts:colaborador_editar' u.pk %}">Editar</a>
+            {% if u.is_active and u != user %}
+            <a class="btn btn-secundario btn-pequeno" href="{% url 'tarefas:nova' %}?responsavel={{ u.pk }}">+ Tarefa</a>
+            <a class="btn btn-secundario btn-pequeno" href="{% url 'metas:nova' %}?responsavel={{ u.pk }}">+ Meta</a>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
